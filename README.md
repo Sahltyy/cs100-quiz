@@ -1,6 +1,6 @@
 # CS100 Quiz
 
-A cute practice quiz and flashcard deck for my CS100 test. All 19 study-guide questions, with sounds, read-aloud, and both answers marked on the extra-credit questions.
+A cute practice quiz and flashcard deck for my CS100 test. All 19 study-guide questions, with sounds, read-aloud, flashcards, a "Type it" mode for tests with no word box, and both answers marked on the extra-credit questions.
 
 **Open it:** https://sahltyy.github.io/cs100-quiz/
 

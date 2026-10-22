@@ -3,7 +3,6 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="robots" content="noindex, nofollow">
 <title>CS100 Test Prep</title>
 <meta name="description" content="CS100 practice quiz and flashcards with sounds and read-aloud.">
 <meta name="theme-color" content="#FFF2F6" media="(prefers-color-scheme: light)">
@@ -121,7 +120,7 @@ h1{font-family:var(--font-display);font-weight:400;font-size:clamp(2rem,7.4vw,2.
 /* ---------- toolbar ---------- */
 .toolbar{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px}
 .seg{display:inline-flex;padding:4px;gap:4px;background:var(--surface);border:2.5px solid var(--outline);border-radius:999px;box-shadow:3px 3px 0 var(--outline)}
-.seg button{border:0;background:transparent;padding:6px 16px;border-radius:999px;font-weight:800;font-size:.98rem;cursor:pointer;color:var(--ink-soft)}
+.seg button{border:0;background:transparent;padding:6px 14px;border-radius:999px;font-weight:800;font-size:.98rem;cursor:pointer;color:var(--ink-soft)}
 .seg button[aria-selected="true"]{background:var(--pink);color:var(--on-fill)}
 .toggles{display:flex;flex-wrap:wrap;gap:8px}
 .tog{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:999px;border:2px solid var(--outline);background:var(--surface);font-weight:700;font-size:.9rem;cursor:pointer}
@@ -206,9 +205,23 @@ h1{font-family:var(--font-display);font-weight:400;font-size:clamp(2rem,7.4vw,2.
 .keys{font-size:.82rem;color:var(--ink-soft);text-align:center;font-weight:600}
 @media (hover:none){.keys,.keys-inline{display:none}}
 
+/* ---------- type it ---------- */
+.type-form{display:flex;flex-direction:column;gap:8px}
+.type-row{display:flex;flex-wrap:wrap;gap:10px}
+.type-input{flex:1 1 200px;min-width:0;font-family:var(--font-body);font-size:1.15rem;font-weight:700;color:var(--ink);padding:10px 16px;min-height:52px;border:2.5px solid var(--outline);border-radius:var(--r-md);background:var(--surface-2);box-shadow:inset 0 3px 0 var(--chrome);transition:background-color .15s ease}
+.type-input::placeholder{color:var(--ink-soft);font-weight:600;opacity:.8}
+.type-input:focus-visible{outline:3px solid var(--sky);outline-offset:2px}
+.type-input.ok{background:var(--mint-soft)}
+.type-input.no{background:var(--coral-soft)}
+.type-input.shake{animation:shake .42s ease}
+.type-row .btn{min-height:52px}
+.yours{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 8px;font-weight:700}
+.yours .typed{font-family:var(--font-mono);font-weight:500;font-size:.95rem;padding:1px 8px;border-radius:8px;background:var(--surface);border:2px solid var(--line);overflow-wrap:anywhere}
+.note{padding:8px 12px;border-radius:var(--r-sm);background:var(--pink-soft);font-weight:700}
+
 /* ---------- results ---------- */
 .bigscore{display:flex;align-items:baseline;gap:10px;font-family:var(--font-display);font-weight:400;line-height:1}
-#final{font-size:clamp(4rem,16vw,5.5rem);color:var(--pink);text-shadow:4px 4px 0 var(--outline)}
+#final,#t-final{font-size:clamp(4rem,16vw,5.5rem);color:var(--pink);text-shadow:4px 4px 0 var(--outline)}
 .bigscore .of{font-size:1.8rem;color:var(--ink-soft)}
 .final-msg{font-size:1.15rem;font-weight:800}
 .missed-list{list-style:none;margin:6px 0 0;padding:0;display:flex;flex-direction:column}
@@ -311,6 +324,7 @@ h1{font-family:var(--font-display);font-weight:400;font-size:clamp(2rem,7.4vw,2.
     <div class="seg" role="tablist" aria-label="Study mode">
       <button type="button" role="tab" id="tab-quiz" aria-controls="quiz-view" aria-selected="true">Quiz</button>
       <button type="button" role="tab" id="tab-cards" aria-controls="cards-view" aria-selected="false">Flashcards</button>
+      <button type="button" role="tab" id="tab-type" aria-controls="type-view" aria-selected="false">Type it</button>
     </div>
     <div class="toggles">
       <button type="button" class="tog" id="tog-sound" aria-pressed="true"><span class="ic"></span><span class="lbl">Sound on</span></button>
@@ -409,6 +423,64 @@ h1{font-family:var(--font-display);font-weight:400;font-size:clamp(2rem,7.4vw,2.
         <button type="button" class="btn ghost" id="btn-shuffle"><span class="ic" data-icon="shuffle"></span><span class="lbl">Shuffle</span></button>
         <button type="button" class="btn primary" id="btn-cnext"><span class="lbl">Next</span><span class="ic" data-icon="next"></span></button>
       </div>
+    </div>
+  </section>
+
+  <section id="type-view" role="tabpanel" aria-labelledby="tab-type" hidden>
+    <div class="wrap">
+      <div class="progress">
+        <div class="dots" id="t-dots" role="img" aria-label="Progress"></div>
+        <div class="score" id="t-score"></div>
+      </div>
+
+      <div id="type-play" class="wrap">
+        <article class="window" id="tcard">
+          <div class="chrome">
+            <span class="lights"><i></i><i></i><i></i></span>
+            <span class="addr"><span class="ic" data-icon="lock"></span><span class="url" id="t-addr">cs100.quiz/type/01</span></span>
+          </div>
+          <div class="win-body">
+            <p class="eyebrow"><span id="t-num">Question 1 of 19</span><span class="topic" id="t-topic">Text formats</span><span class="bonus" id="t-bonus" hidden>Extra credit</span></p>
+            <h2 class="qtext" id="t-q" tabindex="-1"></h2>
+            <pre class="code" id="t-code" hidden></pre>
+            <form class="type-form" id="t-form" autocomplete="off" novalidate>
+              <label class="tagline" for="t-input">Your answer (no word box)</label>
+              <div class="type-row">
+                <input class="type-input" id="t-input" name="t-input" type="text" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" enterkeyhint="done" placeholder="Type it like on the test">
+                <button type="submit" class="btn primary" id="t-check"><span class="lbl">Check</span><span class="ic" data-icon="check16"></span></button>
+              </div>
+            </form>
+            <div class="hintbox" id="t-hint" hidden><span class="ic" data-icon="bulb"></span><span id="t-hint-text"></span></div>
+            <div class="feedback" id="t-feedback" hidden aria-live="polite"></div>
+            <div class="actions">
+              <button type="button" class="btn ghost read-btn" id="t-read"><span class="ic" data-icon="speaker"></span><span class="lbl">Read aloud</span></button>
+              <button type="button" class="btn ghost" id="t-hint-btn"><span class="ic" data-icon="bulb"></span><span class="lbl">Hint</span></button>
+              <button type="button" class="btn ghost" id="t-giveup"><span class="lbl">Show answer</span></button>
+              <span class="spacer"></span>
+              <button type="button" class="btn primary" id="t-next" disabled><span class="lbl">Next</span><span class="ic" data-icon="next"></span></button>
+            </div>
+          </div>
+        </article>
+        <p class="keys">Enter checks your answer, then Enter again for the next one</p>
+      </div>
+
+      <article class="window" id="t-done" hidden>
+        <div class="chrome">
+          <span class="lights"><i></i><i></i><i></i></span>
+          <span class="addr"><span class="ic" data-icon="lock"></span><span class="url">cs100.quiz/type/results</span></span>
+        </div>
+        <div class="win-body">
+          <p class="eyebrow">Type-it round complete</p>
+          <p class="bigscore"><span id="t-final" class="t-final">0</span><span class="of">/ <span id="t-final-total">19</span></span></p>
+          <p class="final-msg" id="t-final-msg"></p>
+          <p class="muted small" id="t-best"></p>
+          <div id="t-missed" hidden></div>
+          <div class="actions">
+            <button type="button" class="btn primary" id="t-retry"><span class="ic" data-icon="restart"></span><span class="lbl">Retry the ones I missed</span></button>
+            <button type="button" class="btn" id="t-restart"><span class="ic" data-icon="restart"></span><span class="lbl">Start over</span></button>
+          </div>
+        </div>
+      </article>
     </div>
   </section>
 </div>
@@ -565,6 +637,7 @@ const ICON = {
   restart: svg('<path d="M4 12a8 8 0 1 0 2.3-5.6"/><path d="M4 4v4h4"/>'),
   cards: svg('<rect x="3" y="6" width="14" height="14" rx="2.5"/><path d="M7 3h11.5A2.5 2.5 0 0 1 21 5.5V17"/>'),
   check: svg('<path d="M5 12.5l4.5 4.5L19 7.5"/>', 22),
+  check16: svg('<path d="M5 12.5l4.5 4.5L19 7.5"/>', 18),
   x: svg('<path d="M6.5 6.5l11 11M17.5 6.5l-11 11"/>', 22),
   lock: svg('<rect x="5" y="11" width="14" height="9.5" rx="2.2"/><path d="M8.5 11V8a3.5 3.5 0 0 1 7 0v3"/>', 14),
   cal: svg('<rect x="4" y="5" width="16" height="15" rx="2.5"/><path d="M4 10h16M9 3v4M15 3v4"/>', 16),
@@ -719,7 +792,7 @@ function freshState() { return { v: 1, mode: "quiz", run: newRun(ALL.slice(), tr
 function valid(s) {
   try {
     const r = s && s.run;
-    return s.v === 1 && (s.mode === "quiz" || s.mode === "cards")
+    return s.v === 1 && (s.mode === "quiz" || s.mode === "cards" || s.mode === "type")
       && r && Array.isArray(r.list) && r.list.length > 0
       && r.list.every((i) => Number.isInteger(i) && i >= 0 && i < Q.length)
       && r.shuffles && r.list.every((i) => Array.isArray(r.shuffles[i]) && r.shuffles[i].length === 4)
@@ -960,13 +1033,292 @@ function readCard() { if (isSpeaking()) stopSpeech(); else say(cardSpeech()); }
 function setMode(m) {
   state.mode = m;
   stopSpeech();
-  $("#tab-quiz").setAttribute("aria-selected", String(m === "quiz"));
-  $("#tab-cards").setAttribute("aria-selected", String(m === "cards"));
-  $("#quiz-view").hidden = m !== "quiz";
-  $("#cards-view").hidden = m !== "cards";
+  [["quiz", "#tab-quiz", "#quiz-view"], ["cards", "#tab-cards", "#cards-view"], ["type", "#tab-type", "#type-view"]].forEach(([k, tab, view]) => {
+    $(tab).setAttribute("aria-selected", String(k === m));
+    $(view).hidden = k !== m;
+  });
   if (m === "quiz") renderQuiz();
-  else { renderCard(); mood("idle", "Flip, flip, flip!"); }
+  else if (m === "cards") { renderCard(); mood("idle", "Flip, flip, flip!"); }
+  else renderType();
   save();
+}
+
+/* ---------------- type it (no word box) ---------------- */
+const norm = (s) => String(s).toLowerCase().replace(/&/g, "and").replace(/[^a-z0-9]/g, "");
+function lev(a, b) {
+  if (!a.length) return b.length;
+  if (!b.length) return a.length;
+  let prev = Array.from({ length: b.length + 1 }, (_, j) => j);
+  for (let i = 1; i <= a.length; i++) {
+    const cur = [i];
+    for (let j = 1; j <= b.length; j++) cur[j] = Math.min(prev[j] + 1, cur[j - 1] + 1, prev[j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1));
+    prev = cur;
+  }
+  return prev[b.length];
+}
+// exact match, or a small typo on longer words. Short acronyms (DNS, SMTP…) must be exact.
+function hit(n, list) {
+  if (list.includes(n)) return "exact";
+  for (const a of list) { if (a.length >= 5 && lev(n, a) <= (a.length >= 9 ? 2 : 1)) return "close"; }
+  return null;
+}
+const TYPE = [
+  { acc: ["html", "hypertextmarkuplanguage"] },
+  { acc: ["json", "javascriptobjectnotation"] },
+  { acc: ["utf8", "unicode", "unicodeutf8", "utf8unicode"] },
+  { acc: ["rtf", "richtextformat", "richtext", "rtfrichtextformat", "richtextformatrtf"] },
+  { acc: ["dhcp", "dynamichostconfigurationprotocol"] },
+  { acc: ["mac", "macaddress", "mediaaccesscontrol", "mediaaccesscontroladdress", "physicaladdress", "hardwareaddress"] },
+  { acc: ["dns", "dnsserver", "domainnamesystem", "domainnameserver", "domainnamesystemserver"] },
+  { acc: [], fn: (raw, n) => {
+      const has192 = /192\s*\.\s*168/.test(raw) || n.startsWith("192168");
+      const has10 = /(^|[^0-9.])10\s*\./.test(raw);
+      const has172 = /172\s*\.\s*(1[6-9]|2\d|3[01])/.test(raw);
+      if (has192) return { ok: true, extra: has10 && has172, note: has10 && has172 ? "" : "For extra credit, also list 10.*.*.* and 172.16.*.* to 172.31.*.*" };
+      if (has10 || has172) return { ok: true, note: "That one's private too! But the study guide's answer is 192.168.*.*, so write that one first." };
+      return null;
+    } },
+  { acc: ["authentication", "authenticate", "userauthentication"] },
+  { acc: ["anonymous", "anonymoususer", "anonymoususers", "anon"] },
+  { acc: ["asymmetricencryption"], fn: (raw, n) => {
+      const asym = /as+[yi]m+/.test(n) || n.includes("publickeyenc") || n.includes("publickeycrypt");
+      const keys = n.includes("public") && n.includes("priv");
+      if (asym && keys) return { ok: true };
+      if (asym) return { ok: false, partial: true, note: "You got the process! The question also asks for the key names: public and private." };
+      if (keys) return { ok: false, partial: true, note: "You got the keys! Now name the process: asymmetric encryption." };
+      if (n.includes("symmetric")) return { ok: false, note: "Symmetric uses ONE shared key. Different keys means asymmetric." };
+      return null;
+    } },
+  { acc: ["https", "httpsecure", "hypertexttransferprotocolsecure"], fn: (raw, n) => n === "http" ? { ok: false, note: "So close! Plain HTTP isn't encrypted. Add the S for Secure." } : null },
+  { acc: ["digitalsignature", "digitalsignatures", "digitalsig"] },
+  { acc: ["copyright", "copyrights"] },
+  { acc: ["trademark", "trademarks", "tm", "registeredtrademark"] },
+  { acc: ["firstsaledoctrine", "firstsale", "firstsalerule", "thefirstsaledoctrine"] },
+  { acc: ["patent", "patents"] },
+  { acc: ["smtp", "simplemailtransferprotocol"] },
+  { acc: ["imap", "pop3"], fn: (raw, n) => {
+      const imap = n.includes("imap"), pop = n.includes("pop");
+      if (imap && pop) return { ok: true, extra: true };
+      if (imap || pop) return { ok: true, note: "For extra credit, write both: IMAP and POP3." };
+      return null;
+    } }
+];
+function grade(qi, raw) {
+  const n = norm(raw), t = TYPE[qi];
+  if (t.fn) { const r = t.fn(raw, n); if (r) return r; }
+  const h = hit(n, t.acc);
+  if (h === "exact") return { ok: true };
+  if (h === "close") return { ok: true, close: true };
+  for (let j = 0; j < TYPE.length; j++) {
+    if (j !== qi && TYPE[j].acc.includes(n)) return { ok: false, other: j };
+  }
+  return { ok: false };
+}
+function newTypeRun(list, full) { return { list, pos: 0, answers: {}, full }; }
+function validType(r) {
+  try {
+    return r && Array.isArray(r.list) && r.list.length > 0 && r.list.every((i) => Number.isInteger(i) && i >= 0 && i < Q.length)
+      && r.answers && typeof r.answers === "object" && Number.isInteger(r.pos) && r.pos >= 0 && r.pos <= r.list.length;
+  } catch (e) { return false; }
+}
+const tRec = (qi) => state.typeRun.answers[qi];
+function tVerdict(qi, g) {
+  if (g.gaveUp) return "Here's the answer.";
+  if (g.ok) return g.close ? "Got it! Just check the spelling." : Q[qi].good;
+  return g.partial ? "Halfway there!" : Q[qi].bad;
+}
+function tNote(g) {
+  if (g.other !== undefined) return `That's the answer to #${g.other + 1} (${answerText(Q[g.other])}).`;
+  return g.note || "";
+}
+function renderTypeDots() {
+  const run = state.typeRun, d = $("#t-dots");
+  d.innerHTML = "";
+  let prevT = null;
+  run.list.forEach((qi, p) => {
+    if (prevT !== null && Q[qi].t !== prevT) { const g = document.createElement("span"); g.className = "gap"; d.appendChild(g); }
+    prevT = Q[qi].t;
+    const s = document.createElement("span");
+    s.className = "dot";
+    const r = run.answers[qi];
+    if (p === run.pos) s.classList.add("now");
+    if (r) s.classList.add(r.g.ok ? "ok" : "no");
+    d.appendChild(s);
+  });
+  d.setAttribute("aria-label", `Progress: question ${Math.min(run.pos + 1, run.list.length)} of ${run.list.length}`);
+  const done = run.list.filter((i) => run.answers[i]);
+  const right = done.filter((i) => run.answers[i].g.ok).length;
+  $("#t-score").innerHTML = `${ICON.star}<b>${right}</b>&nbsp;correct<span class="muted">&nbsp;· ${done.length} answered</span>`;
+}
+function renderType() {
+  const run = state.typeRun;
+  const finished = run.pos >= run.list.length;
+  $("#type-play").hidden = finished;
+  $("#t-done").hidden = !finished;
+  renderTypeDots();
+  if (finished) { renderTypeDone(); return; }
+  const qi = run.list[run.pos], q = Q[qi];
+  $("#t-addr").textContent = "cs100.quiz/type/" + pad(qi + 1);
+  $("#t-num").textContent = run.full ? `Question ${qi + 1} of ${Q.length}` : `Retry ${run.pos + 1} of ${run.list.length} · #${qi + 1}`;
+  $("#t-topic").textContent = TOPICS[q.t];
+  $("#t-bonus").hidden = !q.extra;
+  $("#t-q").textContent = q.q;
+  const code = $("#t-code"); code.hidden = !q.code; code.textContent = q.code || "";
+  $("#t-hint").hidden = true;
+  $("#t-hint-text").textContent = q.hint;
+  $("#t-next .lbl").textContent = run.pos === run.list.length - 1 ? "See results" : "Next";
+  const inp = $("#t-input");
+  inp.classList.remove("ok", "no", "shake");
+  const rec = tRec(qi);
+  if (rec) { inp.value = rec.text; showTypeResult(qi, rec); }
+  else {
+    inp.value = ""; inp.readOnly = false;
+    $("#t-check").disabled = false; $("#t-giveup").disabled = false; $("#t-hint-btn").disabled = false;
+    $("#t-next").disabled = true;
+    const fb = $("#t-feedback"); fb.hidden = true; fb.innerHTML = "";
+    mood("idle", run.pos === 0 && run.full ? "No word box? No problem." : IDLE[Math.floor(Math.random() * IDLE.length)]);
+  }
+}
+function showTypeResult(qi, rec) {
+  const q = Q[qi], g = rec.g, ok = g.ok, note = tNote(g);
+  const inp = $("#t-input");
+  inp.readOnly = true;
+  inp.classList.toggle("ok", ok); inp.classList.toggle("no", !ok);
+  const fb = $("#t-feedback");
+  fb.innerHTML =
+    `<p class="verdict ${ok ? "good" : "bad"}">${esc(tVerdict(qi, g))}</p>` +
+    (rec.text ? `<p class="yours"><span class="tagline">You typed</span><span class="typed">${esc(rec.text)}</span></p>` : "") +
+    `<p class="answer"><span class="tagline">Answer</span><span>${esc(answerText(q))}</span></p>` +
+    (note ? `<p class="note">${esc(note)}</p>` : "") +
+    (g.extra ? `<p class="note">You wrote them all. Extra credit earned! ⭐</p>` : "") +
+    `<p class="ex">${esc(q.ex)}</p>` +
+    (q.extra && !g.extra ? `<div class="extra"><span class="tag">Extra credit</span> ${esc(q.extra)}</div>` : "");
+  fb.classList.toggle("good", ok); fb.classList.toggle("bad", !ok);
+  fb.hidden = false;
+  $("#t-hint").hidden = true;
+  $("#t-check").disabled = true; $("#t-giveup").disabled = true; $("#t-hint-btn").disabled = true;
+  $("#t-next").disabled = false;
+  mood(ok ? "happy" : "sad", ok ? (g.close ? "Check that spelling!" : q.good) : (g.gaveUp ? "Now you know it!" : q.bad));
+}
+function typeSubmit(e) {
+  if (e) e.preventDefault();
+  const run = state.typeRun;
+  if (run.pos >= run.list.length) return;
+  const qi = run.list[run.pos];
+  if (tRec(qi)) { typeNext(); return; }
+  const inp = $("#t-input"), text = inp.value.trim();
+  if (!norm(text)) {
+    inp.classList.remove("shake"); void inp.offsetWidth;
+    if (!reduceMotion) inp.classList.add("shake");
+    mood("idle", "Type something first, or tap Show answer.");
+    inp.focus();
+    return;
+  }
+  typeRecord(qi, text, grade(qi, text));
+}
+function typeGiveUp() {
+  const run = state.typeRun;
+  if (run.pos >= run.list.length) return;
+  const qi = run.list[run.pos];
+  if (tRec(qi)) return;
+  typeRecord(qi, $("#t-input").value.trim(), { ok: false, gaveUp: true });
+}
+function typeRecord(qi, text, g) {
+  const rec = { text, g };
+  state.typeRun.answers[qi] = rec;
+  showTypeResult(qi, rec);
+  renderTypeDots();
+  if (g.ok) { sfx.correct(); confetti($("#t-input")); }
+  else { sfx.wrong(); if (!reduceMotion && !g.gaveUp) { const inp = $("#t-input"); inp.classList.remove("shake"); void inp.offsetWidth; inp.classList.add("shake"); } }
+  $("#t-feedback").scrollIntoView({ block: "nearest", behavior: reduceMotion ? "auto" : "smooth" });
+  if (autoRead) setTimeout(() => say(spoken(tVerdict(qi, g) + " " + tNote(g)) + " " + sayAnswer(qi)), 650); else stopSpeech();
+  save();
+}
+function typeNext() {
+  const run = state.typeRun;
+  if (run.pos >= run.list.length) return;
+  run.pos++;
+  stopSpeech(); sfx.tick();
+  renderType();
+  const card = run.pos >= run.list.length ? $("#t-done") : $("#tcard");
+  if (card.getBoundingClientRect().top < 0) card.scrollIntoView({ block: "start", behavior: reduceMotion ? "auto" : "smooth" });
+  if (run.pos >= run.list.length) typeFinish();
+  else {
+    $("#t-input").focus({ preventScroll: true });
+    if (autoRead) say(sayQuestion(run.list[run.pos], null));
+  }
+  save();
+}
+function typeStats() {
+  const run = state.typeRun;
+  const right = run.list.filter((i) => run.answers[i] && run.answers[i].g.ok).length;
+  const missed = run.list.filter((i) => !(run.answers[i] && run.answers[i].g.ok));
+  return { right, total: run.list.length, missed };
+}
+function renderTypeDone() {
+  const { right, total, missed } = typeStats();
+  const pct = right / total;
+  $("#t-final").textContent = right;
+  $("#t-final-total").textContent = total;
+  $("#t-final-msg").textContent =
+    pct === 1 ? "Perfect, with no word box! You're ready." :
+    pct >= 0.85 ? "So close. Retry the misses once and you're set." :
+    pct >= 0.65 ? "Solid! Typing it is harder, and you're getting there." :
+    "Good start. Flip through the flashcards, then type them again.";
+  const best = store.get("cs100-type-best", null);
+  $("#t-best").textContent = best != null ? `Best full type-it run: ${best} / ${Q.length}` : "";
+  const ml = $("#t-missed");
+  if (missed.length) {
+    ml.hidden = false;
+    ml.innerHTML = `<p class="eyebrow">Review these</p><ul class="missed-list">` +
+      missed.map((i) => `<li><span class="mnum">#${i + 1}</span><span class="mbody"><span class="mq">${esc(Q[i].q)}</span><span class="ma">${esc(answerText(Q[i]))}</span></span></li>`).join("") +
+      `</ul>`;
+  } else { ml.hidden = true; ml.innerHTML = ""; }
+  $("#t-retry").hidden = !missed.length;
+  $("#t-retry .lbl").textContent = missed.length === 1 ? "Retry the 1 I missed" : `Retry the ${missed.length} I missed`;
+  mood(pct >= 0.65 ? "happy" : "idle", pct === 1 ? "PERFECT!!" : "Round done!");
+}
+function typeFinish() {
+  const { right, total } = typeStats();
+  if (state.typeRun.full) { const best = store.get("cs100-type-best", null); if (best == null || right > best) store.set("cs100-type-best", right); }
+  renderTypeDone();
+  sfx.fanfare();
+  confetti($("#t-final"));
+  if (autoRead) say(spoken(`You got ${right} out of ${total}. ${$("#t-final-msg").textContent}`));
+}
+function typeStart(list, full) {
+  state.typeRun = newTypeRun(list, full);
+  stopSpeech(); sfx.tick();
+  renderType();
+  const card = $("#tcard");
+  if (card.getBoundingClientRect().top < 0) card.scrollIntoView({ block: "start", behavior: reduceMotion ? "auto" : "smooth" });
+  $("#t-input").focus({ preventScroll: true });
+  save();
+}
+function readType() {
+  if (isSpeaking()) { stopSpeech(); return; }
+  const run = state.typeRun;
+  if (run.pos >= run.list.length) { say(spoken($("#t-final-msg").textContent)); return; }
+  const qi = run.list[run.pos], rec = tRec(qi);
+  say(rec ? spoken(tVerdict(qi, rec.g) + " " + tNote(rec.g)) + " " + sayAnswer(qi) : sayQuestion(qi, null));
+}
+function wireType() {
+  $("#tab-type").addEventListener("click", () => { sfx.tick(); setMode("type"); });
+  $("#t-form").addEventListener("submit", typeSubmit);
+  // a read-only box won't submit the form on Enter, so handle "Enter = next" here
+  $("#t-input").addEventListener("keydown", (e) => {
+    if (e.key === "Enter" && e.target.readOnly) { e.preventDefault(); typeNext(); }
+  });
+  $("#t-giveup").addEventListener("click", typeGiveUp);
+  $("#t-next").addEventListener("click", typeNext);
+  $("#t-read").addEventListener("click", readType);
+  $("#t-hint-btn").addEventListener("click", () => {
+    $("#t-hint").hidden = false; $("#t-hint-btn").disabled = true; sfx.tick();
+    mood("idle", "Psst… here's a clue.");
+    if (autoRead) say(spoken("Hint: " + Q[state.typeRun.list[state.typeRun.pos]].hint));
+  });
+  $("#t-retry").addEventListener("click", () => { const { missed } = typeStats(); if (missed.length) typeStart(missed, false); });
+  $("#t-restart").addEventListener("click", () => typeStart(ALL.slice(), true));
 }
 function renderToggles() {
   const s = $("#tog-sound");
@@ -1016,6 +1368,7 @@ function wire() {
 
   document.addEventListener("keydown", (e) => {
     if (e.metaKey || e.ctrlKey || e.altKey) return;
+    if (e.target && (e.target.tagName === "INPUT" || e.target.tagName === "TEXTAREA")) return;
     const onButton = e.target && e.target.tagName === "BUTTON";
     const k = (e.key || "").toLowerCase();
     if (state.mode === "quiz") {
@@ -1028,6 +1381,11 @@ function wire() {
       }
       if ((k === "enter" || k === "arrowright") && !onButton) { if (!$("#btn-next").disabled) { e.preventDefault(); next(); } return; }
       if (k === "r") { e.preventDefault(); readQuiz(); }
+    } else if (state.mode === "type") {
+      const tr = state.typeRun;
+      if (tr.pos >= tr.list.length) return;
+      if (k === "enter" && !onButton && tRec(tr.list[tr.pos])) { e.preventDefault(); typeNext(); }
+      else if (k === "r") { e.preventDefault(); readType(); }
     } else {
       if (k === "arrowright") { e.preventDefault(); cardStep(1); }
       else if (k === "arrowleft") { e.preventDefault(); cardStep(-1); }
@@ -1042,7 +1400,9 @@ function boot(data) {
   state = valid(cand) ? cand : freshState();
   state.flipped = !!state.flipped;
   state.cardsShuffled = !!state.cardsShuffled;
+  if (!validType(state.typeRun)) state.typeRun = newTypeRun(ALL.slice(), true);
   wire();
+  wireType();
   renderToggles();
   renderCountdown();
   setInterval(renderCountdown, 60000);
@@ -1061,6 +1421,11 @@ if (hot && hot.ready) hot.ready(boot); else boot(hot && hot.data ? hot.data : {}
   // Opened as a saved file: everything is already inside this one file.
   if (!served) { if (chip) chip.hidden = false; return; }
   if (!("serviceWorker" in navigator) || window.top !== window.self) return;
+  // When a newer version installs, reload once so the update shows right away.
+  var hadController = !!navigator.serviceWorker.controller, reloaded = false;
+  navigator.serviceWorker.addEventListener("controllerchange", function(){
+    if (hadController && !reloaded) { reloaded = true; location.reload(); }
+  });
   window.addEventListener("load", function(){
     navigator.serviceWorker.register("sw.js")
       .then(function(){ return navigator.serviceWorker.ready; })
