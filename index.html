@@ -1062,9 +1062,16 @@ function lev(a, b) {
   return prev[b.length];
 }
 // exact match, or a small typo on longer words. Short acronyms (DNS, SMTP…) must be exact.
+const trimTail = (x) => x.replace(/(protocol|system|server|address|language|notation|format|doctrine)$/, "");
 function hit(n, list) {
   if (list.includes(n)) return "exact";
   for (const a of list) { if (a.length >= 5 && lev(n, a) <= (a.length >= 9 ? 2 : 1)) return "close"; }
+  // spelled out but missing the last word, like "dynamic host configuration" (no "protocol")
+  const tn = trimTail(n);
+  for (const a of list) {
+    const ta = trimTail(a);
+    if (ta !== a && ta.length >= 5 && (tn === ta || lev(tn, ta) <= (ta.length >= 9 ? 2 : 1))) return "short";
+  }
   return null;
 }
 const TYPE = [
@@ -1114,6 +1121,7 @@ function grade(qi, raw) {
   const h = hit(n, t.acc);
   if (h === "exact") return { ok: true };
   if (h === "close") return { ok: true, close: true };
+  if (h === "short") return { ok: true, note: `Yes! The full name has one more word at the end. On the test, ${answerText(Q[qi])} is the safest answer.` };
   for (let j = 0; j < TYPE.length; j++) {
     if (j !== qi && TYPE[j].acc.includes(n)) return { ok: false, other: j };
   }

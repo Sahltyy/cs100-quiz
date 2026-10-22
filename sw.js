@@ -1,5 +1,5 @@
 // CS100 quiz: keeps every file on the phone so the quiz opens with no internet.
-const CACHE = "cs100-quiz-v4";
+const CACHE = "cs100-quiz-v5";
 const FILES = ["./", "./index.html", "./manifest.webmanifest", "./icon-180.png", "./icon-192.png", "./icon-512.png"];
 
 self.addEventListener("install", (e) => {
