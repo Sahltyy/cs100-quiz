@@ -792,7 +792,7 @@ function newRun(list, full) {
   list.forEach((i) => { shuffles[i] = shuffle([0, 1, 2, 3]); });
   return { list, pos: 0, answers: {}, shuffles, full };
 }
-function freshState() { return { v: 1, mode: "quiz", run: newRun(ALL.slice(), true), cardOrder: ALL.slice(), cardPos: 0, flipped: false, cardsShuffled: false }; }
+function freshState() { return { v: 1, mode: "quiz", run: newRun(shuffle(ALL), true), cardOrder: ALL.slice(), cardPos: 0, flipped: false, cardsShuffled: false }; }
 function valid(s) {
   try {
     const r = s && s.run;
@@ -811,8 +811,9 @@ function renderDots() {
   const run = state.run, d = $("#dots");
   d.innerHTML = "";
   let prevT = null;
+  const inOrder = run.list.every((v, i, a) => i === 0 || a[i - 1] < v);
   run.list.forEach((qi, p) => {
-    if (prevT !== null && Q[qi].t !== prevT) { const g = document.createElement("span"); g.className = "gap"; d.appendChild(g); }
+    if (inOrder && prevT !== null && Q[qi].t !== prevT) { const g = document.createElement("span"); g.className = "gap"; d.appendChild(g); }
     prevT = Q[qi].t;
     const s = document.createElement("span");
     s.className = "dot";
@@ -839,7 +840,7 @@ function renderQuiz() {
 
   const qi = run.list[run.pos], q = Q[qi], perm = run.shuffles[qi];
   $("#addr").textContent = "cs100.quiz/q/" + pad(qi + 1);
-  $("#qnum").textContent = run.full ? `Question ${qi + 1} of ${Q.length}` : `Retry ${run.pos + 1} of ${run.list.length} · #${qi + 1}`;
+  $("#qnum").textContent = run.full ? `Question ${run.pos + 1} of ${run.list.length} · #${qi + 1}` : `Retry ${run.pos + 1} of ${run.list.length} · #${qi + 1}`;
   $("#qtopic").textContent = TOPICS[q.t];
   $("#qbonus").hidden = !q.extra;
   $("#qtext").textContent = q.q;
@@ -1139,8 +1140,9 @@ function renderTypeDots() {
   const run = state.typeRun, d = $("#t-dots");
   d.innerHTML = "";
   let prevT = null;
+  const inOrder = run.list.every((v, i, a) => i === 0 || a[i - 1] < v);
   run.list.forEach((qi, p) => {
-    if (prevT !== null && Q[qi].t !== prevT) { const g = document.createElement("span"); g.className = "gap"; d.appendChild(g); }
+    if (inOrder && prevT !== null && Q[qi].t !== prevT) { const g = document.createElement("span"); g.className = "gap"; d.appendChild(g); }
     prevT = Q[qi].t;
     const s = document.createElement("span");
     s.className = "dot";
@@ -1163,7 +1165,7 @@ function renderType() {
   if (finished) { renderTypeDone(); return; }
   const qi = run.list[run.pos], q = Q[qi];
   $("#t-addr").textContent = "cs100.quiz/type/" + pad(qi + 1);
-  $("#t-num").textContent = run.full ? `Question ${qi + 1} of ${Q.length}` : `Retry ${run.pos + 1} of ${run.list.length} · #${qi + 1}`;
+  $("#t-num").textContent = run.full ? `Question ${run.pos + 1} of ${run.list.length} · #${qi + 1}` : `Retry ${run.pos + 1} of ${run.list.length} · #${qi + 1}`;
   $("#t-topic").textContent = TOPICS[q.t];
   $("#t-bonus").hidden = !q.extra;
   $("#t-q").textContent = q.q;
@@ -1318,8 +1320,8 @@ function armRestart(btn, fn) {
   });
 }
 function wireType() {
-  armRestart($("#btn-restart-mid"), () => { startRun(ALL.slice(), true); mood("happy", "Fresh start!"); });
-  armRestart($("#t-restart-mid"), () => { typeStart(ALL.slice(), true); mood("happy", "Fresh start!"); });
+  armRestart($("#btn-restart-mid"), () => { startRun(shuffle(ALL), true); mood("happy", "Fresh start!"); });
+  armRestart($("#t-restart-mid"), () => { typeStart(shuffle(ALL), true); mood("happy", "Fresh start!"); });
   $("#c-restart").addEventListener("click", () => {
     if (state.cardsShuffled) state.cardOrder = shuffle(ALL);
     state.cardPos = 0; state.flipped = false;
@@ -1341,8 +1343,8 @@ function wireType() {
     mood("idle", "Psst… here's a clue.");
     if (autoRead) say(spoken("Hint: " + Q[state.typeRun.list[state.typeRun.pos]].hint));
   });
-  $("#t-retry").addEventListener("click", () => { const { missed } = typeStats(); if (missed.length) typeStart(missed, false); });
-  $("#t-restart").addEventListener("click", () => typeStart(ALL.slice(), true));
+  $("#t-retry").addEventListener("click", () => { const { missed } = typeStats(); if (missed.length) typeStart(shuffle(missed), false); });
+  $("#t-restart").addEventListener("click", () => typeStart(shuffle(ALL), true));
 }
 function renderToggles() {
   const s = $("#tog-sound");
@@ -1380,8 +1382,8 @@ function wire() {
   $("#btn-read").addEventListener("click", readQuiz);
   $("#btn-hint").addEventListener("click", showHint);
   $("#btn-next").addEventListener("click", next);
-  $("#btn-retry").addEventListener("click", () => { const { missed } = runStats(); if (missed.length) startRun(missed, false); });
-  $("#btn-restart").addEventListener("click", () => startRun(ALL.slice(), true));
+  $("#btn-retry").addEventListener("click", () => { const { missed } = runStats(); if (missed.length) startRun(shuffle(missed), false); });
+  $("#btn-restart").addEventListener("click", () => startRun(shuffle(ALL), true));
   $("#btn-to-cards").addEventListener("click", () => { sfx.tick(); setMode("cards"); });
   $("#flip").addEventListener("click", flipCard);
   $("#btn-flip").addEventListener("click", flipCard);
@@ -1424,7 +1426,7 @@ function boot(data) {
   state = valid(cand) ? cand : freshState();
   state.flipped = !!state.flipped;
   state.cardsShuffled = !!state.cardsShuffled;
-  if (!validType(state.typeRun)) state.typeRun = newTypeRun(ALL.slice(), true);
+  if (!validType(state.typeRun)) state.typeRun = newTypeRun(shuffle(ALL), true);
   wire();
   wireType();
   renderToggles();
