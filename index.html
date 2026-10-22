@@ -198,6 +198,7 @@ h1{font-family:var(--font-display);font-weight:400;font-size:clamp(2rem,7.4vw,2.
 .btn.primary{background:var(--pink);color:var(--on-fill)}
 .btn.ghost{background:transparent;border-color:var(--line);box-shadow:none}
 .btn.ghost:hover:not(:disabled){background:var(--pink-soft);box-shadow:none;transform:none}
+.btn.armed{background:var(--coral-soft);border-color:var(--outline);color:var(--coral-ink)}
 .btn:disabled{opacity:.42;cursor:not-allowed;box-shadow:none}
 .read-btn.is-speaking{background:var(--butter-soft);border-color:var(--outline)}
 .read-btn.is-speaking .ic{animation:pulse 1s ease-in-out infinite}
@@ -355,6 +356,7 @@ h1{font-family:var(--font-display);font-weight:400;font-size:clamp(2rem,7.4vw,2.
             <div class="actions" id="q-actions">
               <button type="button" class="btn ghost read-btn" id="btn-read"><span class="ic" data-icon="speaker"></span><span class="lbl">Read aloud</span></button>
               <button type="button" class="btn ghost" id="btn-hint"><span class="ic" data-icon="bulb"></span><span class="lbl">Hint</span></button>
+              <button type="button" class="btn ghost" id="btn-restart-mid"><span class="ic" data-icon="restart"></span><span class="lbl">Restart</span></button>
               <span class="spacer"></span>
               <button type="button" class="btn primary" id="btn-next" disabled><span class="lbl">Next</span><span class="ic" data-icon="next"></span></button>
             </div>
@@ -420,6 +422,7 @@ h1{font-family:var(--font-display);font-weight:400;font-size:clamp(2rem,7.4vw,2.
         <button type="button" class="btn" id="btn-prev"><span class="ic" data-icon="prev"></span><span class="lbl">Back</span></button>
         <button type="button" class="btn" id="btn-flip"><span class="ic" data-icon="flip"></span><span class="lbl">Flip</span></button>
         <button type="button" class="btn ghost read-btn" id="btn-read-card"><span class="ic" data-icon="speaker"></span><span class="lbl">Read aloud</span></button>
+        <button type="button" class="btn ghost" id="c-restart"><span class="ic" data-icon="restart"></span><span class="lbl">Restart</span></button>
         <button type="button" class="btn ghost" id="btn-shuffle"><span class="ic" data-icon="shuffle"></span><span class="lbl">Shuffle</span></button>
         <button type="button" class="btn primary" id="btn-cnext"><span class="lbl">Next</span><span class="ic" data-icon="next"></span></button>
       </div>
@@ -456,6 +459,7 @@ h1{font-family:var(--font-display);font-weight:400;font-size:clamp(2rem,7.4vw,2.
               <button type="button" class="btn ghost read-btn" id="t-read"><span class="ic" data-icon="speaker"></span><span class="lbl">Read aloud</span></button>
               <button type="button" class="btn ghost" id="t-hint-btn"><span class="ic" data-icon="bulb"></span><span class="lbl">Hint</span></button>
               <button type="button" class="btn ghost" id="t-giveup"><span class="lbl">Show answer</span></button>
+              <button type="button" class="btn ghost" id="t-restart-mid"><span class="ic" data-icon="restart"></span><span class="lbl">Restart</span></button>
               <span class="spacer"></span>
               <button type="button" class="btn primary" id="t-next" disabled><span class="lbl">Next</span><span class="ic" data-icon="next"></span></button>
             </div>
@@ -1302,7 +1306,27 @@ function readType() {
   const qi = run.list[run.pos], rec = tRec(qi);
   say(rec ? spoken(tVerdict(qi, rec.g) + " " + tNote(rec.g)) + " " + sayAnswer(qi) : sayQuestion(qi, null));
 }
+// Restart asks for a second tap so a stray tap doesn't wipe your progress.
+function armRestart(btn, fn) {
+  const lbl = btn.querySelector(".lbl"), base = lbl.textContent;
+  let timer = null;
+  const disarm = () => { clearTimeout(timer); btn.classList.remove("armed"); lbl.textContent = base; };
+  btn.addEventListener("click", () => {
+    if (btn.classList.contains("armed")) { disarm(); fn(); return; }
+    btn.classList.add("armed"); lbl.textContent = "Tap again to restart"; sfx.tick();
+    timer = setTimeout(disarm, 3000);
+  });
+}
 function wireType() {
+  armRestart($("#btn-restart-mid"), () => { startRun(ALL.slice(), true); mood("happy", "Fresh start!"); });
+  armRestart($("#t-restart-mid"), () => { typeStart(ALL.slice(), true); mood("happy", "Fresh start!"); });
+  $("#c-restart").addEventListener("click", () => {
+    if (state.cardsShuffled) state.cardOrder = shuffle(ALL);
+    state.cardPos = 0; state.flipped = false;
+    stopSpeech(); sfx.tick(); renderCard();
+    mood("happy", "Back to card 1!");
+    save();
+  });
   $("#tab-type").addEventListener("click", () => { sfx.tick(); setMode("type"); });
   $("#t-form").addEventListener("submit", typeSubmit);
   // a read-only box won't submit the form on Enter, so handle "Enter = next" here
